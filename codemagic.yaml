@@ -21,6 +21,48 @@ workflows:
           echo "sdk.dir=$ANDROID_SDK_ROOT" > "$FCI_BUILD_DIR/local.properties"
           cat local.properties
           
+      - name: Setup Gradle files
+        script: |
+          # Create settings.gradle
+          echo "rootProject.name = 'SMSGateway'" > settings.gradle
+          echo "include ':app'" >> settings.gradle
+          
+          # Create root build.gradle
+          echo 'plugins {' > build.gradle
+          echo '    id "com.android.application" version "8.1.0" apply false' >> build.gradle
+          echo '    id "org.jetbrains.kotlin.android" version "1.9.0" apply false' >> build.gradle
+          echo '}' >> build.gradle
+          
+          # Create app directory and app/build.gradle
+          mkdir -p app
+          echo 'plugins {' > app/build.gradle
+          echo '    id "com.android.application"' >> app/build.gradle
+          echo '    id "org.jetbrains.kotlin.android"' >> app/build.gradle
+          echo '    id "kotlin-kapt"' >> app/build.gradle
+          echo '}' >> app/build.gradle
+          echo 'android {' >> app/build.gradle
+          echo '    namespace "com.example.smsgateway"' >> app/build.gradle
+          echo '    compileSdk 34' >> app/build.gradle
+          echo '    defaultConfig {' >> app/build.gradle
+          echo '        applicationId "com.example.smsgateway"' >> app/build.gradle
+          echo '        minSdk 24' >> app/build.gradle
+          echo '        targetSdk 34' >> app/build.gradle
+          echo '        versionCode 1' >> app/build.gradle
+          echo '        versionName "1.0"' >> app/build.gradle
+          echo '    }' >> app/build.gradle
+          echo '    compileOptions {' >> app/build.gradle
+          echo '        sourceCompatibility JavaVersion.VERSION_17' >> app/build.gradle
+          echo '        targetCompatibility JavaVersion.VERSION_17' >> app/build.gradle
+          echo '    }' >> app/build.gradle
+          echo '    kotlinOptions {' >> app/build.gradle
+          echo '        jvmTarget = "17"' >> app/build.gradle
+          echo '    }' >> app/build.gradle
+          echo '}' >> app/build.gradle
+          echo 'dependencies {' >> app/build.gradle
+          echo '    implementation "androidx.core:core-ktx:1.12.0"' >> app/build.gradle
+          echo '    implementation "androidx.appcompat:appcompat:1.6.1"' >> app/build.gradle
+          echo '}' >> app/build.gradle
+          
       - name: Setup Gradle
         script: |
           wget https://services.gradle.org/distributions/gradle-8.2-bin.zip
@@ -38,23 +80,12 @@ workflows:
           ls -la gradle/wrapper
           ./gradlew --version
           
-      - name: Show project structure
-        script: |
-          echo "Project structure:"
-          ls -R
-          echo "Build files:"
-          cat settings.gradle
-          echo "---"
-          cat build.gradle
-          echo "---"
-          cat app/build.gradle
-          
       - name: Build Android debug app
         script: |
           echo "Starting clean..."
-          ./gradlew clean --debug
+          ./gradlew clean --info
           echo "Starting build..."
-          ./gradlew assembleDebug --debug --stacktrace
+          ./gradlew assembleDebug --info --stacktrace
           
     artifacts:
       - app/build/outputs/apk/debug/*.apk
