@@ -7,6 +7,7 @@ workflows:
         - android_config
       vars:
         PACKAGE_NAME: "com.example.smsgateway"
+      java: 17
     scripts:
       - name: Set up local properties
         script: |
@@ -15,7 +16,7 @@ workflows:
       - name: Download Gradle wrapper
         script: |
           mkdir -p gradle/wrapper
-          wget https://services.gradle.org/distributions/gradle-8.0-bin.zip -P gradle/wrapper/
+          wget https://services.gradle.org/distributions/gradle-8.2-bin.zip -P gradle/wrapper/
           
       - name: Set Gradle permissions
         script: |
@@ -24,7 +25,7 @@ workflows:
       - name: Build Android debug app
         script: |
           ./gradlew clean
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --stacktrace
           
     artifacts:
       - app/build/outputs/apk/debug/*.apk
