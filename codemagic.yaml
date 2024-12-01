@@ -1,23 +1,25 @@
 workflows:
   android-app:
     name: Android SMS Gateway
-    max_build_duration: 30
+    max_build_duration: 60
     environment:
-      android_signing:
-        - keystore_reference
       groups:
-        - google_play
+        - android_config
       vars:
         PACKAGE_NAME: "com.example.smsgateway"
     scripts:
       - name: Set up local properties
-        script: echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
-      - name: Build Android app
         script: |
-          ./gradlew assembleRelease
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$FCI_BUILD_DIR/local.properties"
+          
+      - name: Set Gradle permissions
+        script: |
+          chmod +x gradlew
+          
+      - name: Build Android debug app
+        script: |
+          ./gradlew clean
+          ./gradlew assembleDebug
+          
     artifacts:
-      - app/build/outputs/apk/release/*.apk
-    publishing:
-      email:
-        recipients:
-          - internal@example.com
+      - app/build/outputs/apk/debug/*.apk
