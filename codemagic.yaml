@@ -8,24 +8,36 @@ workflows:
       vars:
         PACKAGE_NAME: "com.example.smsgateway"
       java: 17
+      android_sdk: 34
     scripts:
+      - name: Show environment info
+        script: |
+          java -version
+          echo "Android SDK Root: $ANDROID_SDK_ROOT"
+          echo "Working directory: $(pwd)"
+          ls -la
+          
       - name: Set up local properties
         script: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > "$FCI_BUILD_DIR/local.properties"
+          cat local.properties
           
       - name: Download Gradle wrapper
         script: |
           mkdir -p gradle/wrapper
           wget https://services.gradle.org/distributions/gradle-8.2-bin.zip -P gradle/wrapper/
+          ls -la gradle/wrapper
           
       - name: Set Gradle permissions
         script: |
           chmod +x ./gradlew
+          ./gradlew --version
           
       - name: Build Android debug app
         script: |
-          ./gradlew clean
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew clean --info
+          ./gradlew assembleDebug --info --stacktrace --scan
           
     artifacts:
       - app/build/outputs/apk/debug/*.apk
+      - app/build/reports/*
