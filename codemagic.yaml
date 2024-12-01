@@ -21,47 +21,146 @@ workflows:
           echo "sdk.dir=$ANDROID_SDK_ROOT" > "$FCI_BUILD_DIR/local.properties"
           cat local.properties
           
+      - name: Setup Project Structure
+        script: |
+          # Create basic project structure
+          mkdir -p app/src/main/java/com/example/smsgateway
+          mkdir -p app/src/main/res/layout
+          mkdir -p app/src/main/res/values
+          
+          # Create AndroidManifest.xml
+          cat > app/src/main/AndroidManifest.xml << 'EOL'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <application
+                  android:allowBackup="true"
+                  android:icon="@mipmap/ic_launcher"
+                  android:label="@string/app_name"
+                  android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
+                  <activity android:name=".MainActivity"
+                      android:exported="true">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOL
+          
+          # Create MainActivity.kt
+          cat > app/src/main/java/com/example/smsgateway/MainActivity.kt << 'EOL'
+          package com.example.smsgateway
+          
+          import android.os.Bundle
+          import androidx.appcompat.app.AppCompatActivity
+          
+          class MainActivity : AppCompatActivity() {
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  setContentView(R.layout.activity_main)
+              }
+          }
+          EOL
+          
+          # Create activity_main.xml
+          cat > app/src/main/res/layout/activity_main.xml << 'EOL'
+          <?xml version="1.0" encoding="utf-8"?>
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
+              <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="@string/app_name"/>
+          </LinearLayout>
+          EOL
+          
+          # Create strings.xml
+          cat > app/src/main/res/values/strings.xml << 'EOL'
+          <resources>
+              <string name="app_name">SMS Gateway</string>
+          </resources>
+          EOL
+          
       - name: Setup Gradle files
         script: |
           # Create settings.gradle
-          echo "rootProject.name = 'SMSGateway'" > settings.gradle
-          echo "include ':app'" >> settings.gradle
+          cat > settings.gradle << 'EOL'
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "SMSGateway"
+          include ':app'
+          EOL
           
           # Create root build.gradle
-          echo 'plugins {' > build.gradle
-          echo '    id "com.android.application" version "8.1.0" apply false' >> build.gradle
-          echo '    id "org.jetbrains.kotlin.android" version "1.9.0" apply false' >> build.gradle
-          echo '}' >> build.gradle
+          cat > build.gradle << 'EOL'
+          buildscript {
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+              dependencies {
+                  classpath 'com.android.tools.build:gradle:8.1.0'
+                  classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0'
+              }
+          }
+          EOL
           
-          # Create app directory and app/build.gradle
-          mkdir -p app
-          echo 'plugins {' > app/build.gradle
-          echo '    id "com.android.application"' >> app/build.gradle
-          echo '    id "org.jetbrains.kotlin.android"' >> app/build.gradle
-          echo '    id "kotlin-kapt"' >> app/build.gradle
-          echo '}' >> app/build.gradle
-          echo 'android {' >> app/build.gradle
-          echo '    namespace "com.example.smsgateway"' >> app/build.gradle
-          echo '    compileSdk 34' >> app/build.gradle
-          echo '    defaultConfig {' >> app/build.gradle
-          echo '        applicationId "com.example.smsgateway"' >> app/build.gradle
-          echo '        minSdk 24' >> app/build.gradle
-          echo '        targetSdk 34' >> app/build.gradle
-          echo '        versionCode 1' >> app/build.gradle
-          echo '        versionName "1.0"' >> app/build.gradle
-          echo '    }' >> app/build.gradle
-          echo '    compileOptions {' >> app/build.gradle
-          echo '        sourceCompatibility JavaVersion.VERSION_17' >> app/build.gradle
-          echo '        targetCompatibility JavaVersion.VERSION_17' >> app/build.gradle
-          echo '    }' >> app/build.gradle
-          echo '    kotlinOptions {' >> app/build.gradle
-          echo '        jvmTarget = "17"' >> app/build.gradle
-          echo '    }' >> app/build.gradle
-          echo '}' >> app/build.gradle
-          echo 'dependencies {' >> app/build.gradle
-          echo '    implementation "androidx.core:core-ktx:1.12.0"' >> app/build.gradle
-          echo '    implementation "androidx.appcompat:appcompat:1.6.1"' >> app/build.gradle
-          echo '}' >> app/build.gradle
+          # Create app/build.gradle
+          cat > app/build.gradle << 'EOL'
+          plugins {
+              id 'com.android.application'
+              id 'kotlin-android'
+          }
+          
+          android {
+              namespace 'com.example.smsgateway'
+              compileSdk 34
+          
+              defaultConfig {
+                  applicationId "com.example.smsgateway"
+                  minSdk 24
+                  targetSdk 34
+                  versionCode 1
+                  versionName "1.0"
+              }
+          
+              buildTypes {
+                  release {
+                      minifyEnabled false
+                      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+                  }
+              }
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+              kotlinOptions {
+                  jvmTarget = '17'
+              }
+          }
+          
+          dependencies {
+              implementation 'androidx.core:core-ktx:1.12.0'
+              implementation 'androidx.appcompat:appcompat:1.6.1'
+              implementation 'com.google.android.material:material:1.11.0'
+              implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+          }
+          EOL
           
       - name: Setup Gradle
         script: |
