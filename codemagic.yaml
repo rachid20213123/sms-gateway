@@ -21,15 +21,21 @@ workflows:
           echo "sdk.dir=$ANDROID_SDK_ROOT" > "$FCI_BUILD_DIR/local.properties"
           cat local.properties
           
-      - name: Download Gradle wrapper
+      - name: Setup Gradle
         script: |
+          wget https://services.gradle.org/distributions/gradle-8.2-bin.zip
+          unzip gradle-8.2-bin.zip
+          mv gradle-8.2 gradle
           mkdir -p gradle/wrapper
-          wget https://services.gradle.org/distributions/gradle-8.2-bin.zip -P gradle/wrapper/
+          echo "#!/bin/sh" > gradlew
+          echo 'exec gradle/bin/gradle "$@"' >> gradlew
+          chmod +x gradlew
+          echo "distributionBase=GRADLE_USER_HOME" > gradle/wrapper/gradle-wrapper.properties
+          echo "distributionPath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
+          echo "distributionUrl=https\://services.gradle.org/distributions/gradle-8.2-bin.zip" >> gradle/wrapper/gradle-wrapper.properties
+          echo "zipStoreBase=GRADLE_USER_HOME" >> gradle/wrapper/gradle-wrapper.properties
+          echo "zipStorePath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
           ls -la gradle/wrapper
-          
-      - name: Set Gradle permissions
-        script: |
-          chmod +x ./gradlew
           ./gradlew --version
           
       - name: Build Android debug app
