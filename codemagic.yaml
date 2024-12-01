@@ -107,6 +107,12 @@ workflows:
           echo '        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0"' >> build.gradle
           echo '    }' >> build.gradle
           echo '}' >> build.gradle
+          echo 'allprojects {' >> build.gradle
+          echo '    repositories {' >> build.gradle
+          echo '        google()' >> build.gradle
+          echo '        mavenCentral()' >> build.gradle
+          echo '    }' >> build.gradle
+          echo '}' >> build.gradle
           
           # Create app/build.gradle
           mkdir -p app
@@ -114,7 +120,12 @@ workflows:
           echo '    id "com.android.application"' >> app/build.gradle
           echo '    id "kotlin-android"' >> app/build.gradle
           echo '}' >> app/build.gradle
+          echo 'repositories {' >> app/build.gradle
+          echo '    google()' >> app/build.gradle
+          echo '    mavenCentral()' >> app/build.gradle
+          echo '}' >> app/build.gradle
           echo 'android {' >> app/build.gradle
+          echo '    namespace "com.example.smsgateway"' >> app/build.gradle
           echo '    compileSdk 34' >> app/build.gradle
           echo '    defaultConfig {' >> app/build.gradle
           echo '        applicationId "com.example.smsgateway"' >> app/build.gradle
@@ -122,6 +133,13 @@ workflows:
           echo '        targetSdk 34' >> app/build.gradle
           echo '        versionCode 1' >> app/build.gradle
           echo '        versionName "1.0"' >> app/build.gradle
+          echo '    }' >> app/build.gradle
+          echo '    compileOptions {' >> app/build.gradle
+          echo '        sourceCompatibility JavaVersion.VERSION_17' >> app/build.gradle
+          echo '        targetCompatibility JavaVersion.VERSION_17' >> app/build.gradle
+          echo '    }' >> app/build.gradle
+          echo '    kotlinOptions {' >> app/build.gradle
+          echo '        jvmTarget = "17"' >> app/build.gradle
           echo '    }' >> app/build.gradle
           echo '}' >> app/build.gradle
           echo 'dependencies {' >> app/build.gradle
@@ -138,10 +156,15 @@ workflows:
           echo "#!/bin/sh" > gradlew
           echo 'exec gradle/bin/gradle "$@"' >> gradlew
           chmod +x gradlew
+          echo "distributionBase=GRADLE_USER_HOME" > gradle/wrapper/gradle-wrapper.properties
+          echo "distributionPath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
+          echo "distributionUrl=https\://services.gradle.org/distributions/gradle-8.2-bin.zip" >> gradle/wrapper/gradle-wrapper.properties
+          echo "zipStoreBase=GRADLE_USER_HOME" >> gradle/wrapper/gradle-wrapper.properties
+          echo "zipStorePath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
           
       - name: Build debug APK
         script: |
-          ./gradlew clean assembleDebug --stacktrace
+          ./gradlew clean assembleDebug --info --stacktrace
           
       - name: Debug Project Structure
         script: |
