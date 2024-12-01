@@ -3,69 +3,77 @@ workflows:
     name: Android SMS Gateway
     max_build_duration: 60
     environment:
-      groups:
-        - android_config
-      vars:
-        PACKAGE_NAME: "com.example.smsgateway"
       java: 17
     scripts:
-      - name: Setup project
+      - name: Setup Gradle
         script: |
           # Local properties
           echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
           
-          # Settings
+          # Settings gradle
           echo 'rootProject.name = "SMSGateway"' > settings.gradle
           echo 'include ":app"' >> settings.gradle
           
           # Root build.gradle
           echo 'buildscript {' > build.gradle
-          echo '    repositories { google(); mavenCentral() }' >> build.gradle
+          echo '    repositories {' >> build.gradle
+          echo '        google()' >> build.gradle
+          echo '        mavenCentral()' >> build.gradle
+          echo '    }' >> build.gradle
           echo '    dependencies {' >> build.gradle
-          echo '        classpath "com.android.tools.build:gradle:8.1.0"' >> build.gradle
-          echo '        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0"' >> build.gradle
+          echo '        classpath "com.android.tools.build:gradle:7.4.2"' >> build.gradle
+          echo '        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.0"' >> build.gradle
+          echo '    }' >> build.gradle
+          echo '}' >> build.gradle
+          echo 'allprojects {' >> build.gradle
+          echo '    repositories {' >> build.gradle
+          echo '        google()' >> build.gradle
+          echo '        mavenCentral()' >> build.gradle
           echo '    }' >> build.gradle
           echo '}' >> build.gradle
           
           # App build.gradle
           mkdir -p app
-          echo 'apply plugin: "com.android.application"' > app/build.gradle
-          echo 'apply plugin: "kotlin-android"' >> app/build.gradle
-          echo 'android {' >> app/build.gradle
-          echo '    compileSdk 34' >> app/build.gradle
-          echo '    defaultConfig {' >> app/build.gradle
-          echo '        applicationId "com.example.smsgateway"' >> app/build.gradle
-          echo '        minSdk 24' >> app/build.gradle
-          echo '        targetSdk 34' >> app/build.gradle
-          echo '        versionCode 1' >> app/build.gradle
-          echo '        versionName "1.0"' >> app/build.gradle
-          echo '    }' >> app/build.gradle
-          echo '}' >> app/build.gradle
-          echo 'repositories { google(); mavenCentral() }' >> app/build.gradle
-          echo 'dependencies {' >> app/build.gradle
-          echo '    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.0"' >> app/build.gradle
-          echo '    implementation "androidx.core:core-ktx:1.12.0"' >> app/build.gradle
-          echo '}' >> app/build.gradle
+          cat > app/build.gradle << 'EOL'
+          apply plugin: 'com.android.application'
+          apply plugin: 'kotlin-android'
+          
+          android {
+              compileSdkVersion 33
+              defaultConfig {
+                  applicationId "com.example.smsgateway"
+                  minSdkVersion 24
+                  targetSdkVersion 33
+                  versionCode 1
+                  versionName "1.0"
+              }
+          }
+          
+          dependencies {
+              implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0"
+              implementation 'androidx.core:core-ktx:1.9.0'
+          }
+          EOL
           
           # Gradle wrapper
           mkdir -p gradle/wrapper
-          wget https://services.gradle.org/distributions/gradle-8.2-bin.zip
-          unzip gradle-8.2-bin.zip
-          mv gradle-8.2 gradle-dist
+          wget https://services.gradle.org/distributions/gradle-7.6-bin.zip
+          unzip gradle-7.6-bin.zip
+          mv gradle-7.6 gradle-dist
           echo '#!/bin/sh' > gradlew
           echo 'exec gradle-dist/bin/gradle "$@"' >> gradlew
           chmod +x gradlew
           
-          # Wrapper properties
           echo 'distributionBase=GRADLE_USER_HOME' > gradle/wrapper/gradle-wrapper.properties
           echo 'distributionPath=wrapper/dists' >> gradle/wrapper/gradle-wrapper.properties
-          echo 'distributionUrl=https\://services.gradle.org/distributions/gradle-8.2-bin.zip' >> gradle/wrapper/gradle-wrapper.properties
+          echo 'distributionUrl=https\://services.gradle.org/distributions/gradle-7.6-bin.zip' >> gradle/wrapper/gradle-wrapper.properties
           echo 'zipStoreBase=GRADLE_USER_HOME' >> gradle/wrapper/gradle-wrapper.properties
           echo 'zipStorePath=wrapper/dists' >> gradle/wrapper/gradle-wrapper.properties
-          
-      - name: Build
+      
+      - name: Build Android app
         script: |
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew clean
+          ./gradlew assembleDebug --info
           
     artifacts:
       - app/build/outputs/apk/debug/*.apk
