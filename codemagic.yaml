@@ -12,9 +12,14 @@ workflows:
         script: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > "$FCI_BUILD_DIR/local.properties"
           
+      - name: Download Gradle wrapper
+        script: |
+          mkdir -p gradle/wrapper
+          wget https://services.gradle.org/distributions/gradle-8.0-bin.zip -P gradle/wrapper/
+          
       - name: Set Gradle permissions
         script: |
-          chmod +x gradlew
+          chmod +x ./gradlew
           
       - name: Build Android debug app
         script: |
