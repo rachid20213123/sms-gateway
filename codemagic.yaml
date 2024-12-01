@@ -38,11 +38,25 @@ workflows:
           ls -la gradle/wrapper
           ./gradlew --version
           
+      - name: Show project structure
+        script: |
+          echo "Project structure:"
+          ls -R
+          echo "Build files:"
+          cat settings.gradle
+          echo "---"
+          cat build.gradle
+          echo "---"
+          cat app/build.gradle
+          
       - name: Build Android debug app
         script: |
-          ./gradlew clean --info
-          ./gradlew assembleDebug --info --stacktrace
+          echo "Starting clean..."
+          ./gradlew clean --debug
+          echo "Starting build..."
+          ./gradlew assembleDebug --debug --stacktrace
           
     artifacts:
       - app/build/outputs/apk/debug/*.apk
       - app/build/reports/*
+      - app/build/outputs/logs/*.log
