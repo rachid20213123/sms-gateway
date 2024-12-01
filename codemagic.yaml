@@ -9,195 +9,63 @@ workflows:
         PACKAGE_NAME: "com.example.smsgateway"
       java: 17
     scripts:
-      - name: Show environment info
+      - name: Setup project
         script: |
-          java -version
-          echo "Android SDK Root: $ANDROID_SDK_ROOT"
-          echo "Working directory: $(pwd)"
-          ls -la
+          # Local properties
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
           
-      - name: Set up local properties
-        script: |
-          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$FCI_BUILD_DIR/local.properties"
-          cat local.properties
+          # Settings
+          echo 'rootProject.name = "SMSGateway"' > settings.gradle
+          echo 'include ":app"' >> settings.gradle
           
-      - name: Setup Project Structure
-        script: |
-          # Create basic project structure
-          mkdir -p app/src/main/java/com/example/smsgateway
-          mkdir -p app/src/main/res/layout
-          mkdir -p app/src/main/res/values
-          mkdir -p app/src/main/res/mipmap-xxxhdpi
+          # Root build.gradle
+          echo 'buildscript {' > build.gradle
+          echo '    repositories { google(); mavenCentral() }' >> build.gradle
+          echo '    dependencies {' >> build.gradle
+          echo '        classpath "com.android.tools.build:gradle:8.1.0"' >> build.gradle
+          echo '        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0"' >> build.gradle
+          echo '    }' >> build.gradle
+          echo '}' >> build.gradle
           
-          # Create ic_launcher.png
-          echo "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABhSURBVFhH7ZcxCgAgCAQ1ev8r2xZEYJJ1FHQHt8n4OVRUfsQYc8vsXZ0w9vYLN0BWH8BtQLEfVj+28YBaZCv/6B2QXpXvd0CTXwPwADwAD8AD8ICrgL9liO2HtwdkatUF5TVEJjP3V8IAAAAASUVORK5CYII=" | base64 -d > app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
-          
-          # Create AndroidManifest.xml
-          cat > app/src/main/AndroidManifest.xml << 'EOL'
-          <?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-              <application
-                  android:allowBackup="true"
-                  android:icon="@mipmap/ic_launcher"
-                  android:label="@string/app_name"
-                  android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
-                  <activity 
-                      android:name=".MainActivity"
-                      android:exported="true">
-                      <intent-filter>
-                          <action android:name="android.intent.action.MAIN" />
-                          <category android:name="android.intent.category.LAUNCHER" />
-                      </intent-filter>
-                  </activity>
-              </application>
-          </manifest>
-          EOL
-          
-          # Create MainActivity.kt
-          cat > app/src/main/java/com/example/smsgateway/MainActivity.kt << 'EOL'
-          package com.example.smsgateway
-          
-          import android.os.Bundle
-          import androidx.appcompat.app.AppCompatActivity
-          
-          class MainActivity : AppCompatActivity() {
-              override fun onCreate(savedInstanceState: Bundle?) {
-                  super.onCreate(savedInstanceState)
-                  setContentView(R.layout.activity_main)
-              }
-          }
-          EOL
-          
-          # Create activity_main.xml
-          cat > app/src/main/res/layout/activity_main.xml << 'EOL'
-          <?xml version="1.0" encoding="utf-8"?>
-          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical"
-              android:gravity="center">
-              <TextView
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:text="@string/app_name"/>
-          </LinearLayout>
-          EOL
-          
-          # Create strings.xml
-          cat > app/src/main/res/values/strings.xml << 'EOL'
-          <resources>
-              <string name="app_name">SMS Gateway</string>
-          </resources>
-          EOL
-          
-      - name: Setup Gradle files
-        script: |
-          # Create settings.gradle
-          cat > settings.gradle << 'EOL'
-          pluginManagement {
-              repositories {
-                  gradlePluginPortal()
-                  google()
-                  mavenCentral()
-              }
-          }
-          dependencyResolutionManagement {
-              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-              repositories {
-                  google()
-                  mavenCentral()
-              }
-          }
-          rootProject.name = "SMSGateway"
-          include ':app'
-          EOL
-          
-          # Create root build.gradle
-          cat > build.gradle << 'EOL'
-          plugins {
-              id 'com.android.application' version '8.1.0' apply false
-              id 'org.jetbrains.kotlin.android' version '1.9.0' apply false
-          }
-          EOL
-          
-          # Create app/build.gradle
+          # App build.gradle
           mkdir -p app
-          cat > app/build.gradle << 'EOL'
-          plugins {
-              id 'com.android.application'
-              id 'org.jetbrains.kotlin.android'
-          }
+          echo 'apply plugin: "com.android.application"' > app/build.gradle
+          echo 'apply plugin: "kotlin-android"' >> app/build.gradle
+          echo 'android {' >> app/build.gradle
+          echo '    compileSdk 34' >> app/build.gradle
+          echo '    defaultConfig {' >> app/build.gradle
+          echo '        applicationId "com.example.smsgateway"' >> app/build.gradle
+          echo '        minSdk 24' >> app/build.gradle
+          echo '        targetSdk 34' >> app/build.gradle
+          echo '        versionCode 1' >> app/build.gradle
+          echo '        versionName "1.0"' >> app/build.gradle
+          echo '    }' >> app/build.gradle
+          echo '}' >> app/build.gradle
+          echo 'repositories { google(); mavenCentral() }' >> app/build.gradle
+          echo 'dependencies {' >> app/build.gradle
+          echo '    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.0"' >> app/build.gradle
+          echo '    implementation "androidx.core:core-ktx:1.12.0"' >> app/build.gradle
+          echo '}' >> app/build.gradle
           
-          android {
-              namespace 'com.example.smsgateway'
-              compileSdk 34
-              
-              defaultConfig {
-                  applicationId "com.example.smsgateway"
-                  minSdk 24
-                  targetSdk 34
-                  versionCode 1
-                  versionName "1.0"
-              }
-              
-              buildTypes {
-                  release {
-                      minifyEnabled false
-                  }
-              }
-              
-              compileOptions {
-                  sourceCompatibility JavaVersion.VERSION_17
-                  targetCompatibility JavaVersion.VERSION_17
-              }
-              
-              kotlinOptions {
-                  jvmTarget = '17'
-              }
-          }
-          
-          dependencies {
-              implementation 'androidx.core:core-ktx:1.12.0'
-              implementation 'androidx.appcompat:appcompat:1.6.1'
-              implementation 'com.google.android.material:material:1.11.0'
-          }
-          EOL
-          
-      - name: Setup Gradle wrapper
-        script: |
+          # Gradle wrapper
           mkdir -p gradle/wrapper
-          cat > gradle/wrapper/gradle-wrapper.properties << 'EOL'
-          distributionBase=GRADLE_USER_HOME
-          distributionPath=wrapper/dists
-          distributionUrl=https\://services.gradle.org/distributions/gradle-8.2-bin.zip
-          zipStoreBase=GRADLE_USER_HOME
-          zipStorePath=wrapper/dists
-          EOL
-          
           wget https://services.gradle.org/distributions/gradle-8.2-bin.zip
           unzip gradle-8.2-bin.zip
           mv gradle-8.2 gradle-dist
-          
           echo '#!/bin/sh' > gradlew
           echo 'exec gradle-dist/bin/gradle "$@"' >> gradlew
           chmod +x gradlew
           
-      - name: Build debug APK
-        script: |
-          ./gradlew clean
-          ./gradlew assembleDebug --stacktrace
+          # Wrapper properties
+          echo 'distributionBase=GRADLE_USER_HOME' > gradle/wrapper/gradle-wrapper.properties
+          echo 'distributionPath=wrapper/dists' >> gradle/wrapper/gradle-wrapper.properties
+          echo 'distributionUrl=https\://services.gradle.org/distributions/gradle-8.2-bin.zip' >> gradle/wrapper/gradle-wrapper.properties
+          echo 'zipStoreBase=GRADLE_USER_HOME' >> gradle/wrapper/gradle-wrapper.properties
+          echo 'zipStorePath=wrapper/dists' >> gradle/wrapper/gradle-wrapper.properties
           
-      - name: Debug Project Structure
+      - name: Build
         script: |
-          echo "Project structure:"
-          find . -type f -name "*.kt*" -o -name "*.xml" -o -name "*.properties"
-          echo "\nFile contents:"
-          for f in $(find . -type f -name "*.kt*" -o -name "*.xml" -o -name "*.properties"); do
-            echo "\n=== $f ==="
-            cat "$f"
-          done
+          ./gradlew assembleDebug --stacktrace
           
     artifacts:
       - app/build/outputs/apk/debug/*.apk
-      - app/build/reports/*
-      - app/build/outputs/logs/*.log
